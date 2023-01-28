@@ -52,6 +52,7 @@ func Pluck(source string, location, length int) (string, error) {
 }
 
 func Mutate(raw string, a []Edit) (string, error) {
+
 	if len(a) == 0 {
 		return raw, nil
 	}
@@ -65,7 +66,7 @@ func Mutate(raw string, a []Edit) (string, error) {
 			return "", fmt.Errorf("edit start location is out of bounds")
 		}
 
-		stop := edit.Location + len(edit.Old)
+		stop := edit.Location + len([]rune(edit.Old))
 		if stop > len(s) {
 			return "", fmt.Errorf("edit stop location is out of bounds")
 		}
@@ -74,12 +75,12 @@ func Mutate(raw string, a []Edit) (string, error) {
 		// this edit overlaps the previous one (and is therefore a developer error)
 		if idx != 0 {
 			prevEdit := a[idx-1]
-			if prevEdit.Location < edit.Location+len(edit.Old) {
+			if prevEdit.Location < edit.Location+len([]rune(edit.Old)) {
 				return "", fmt.Errorf("2 edits overlap")
 			}
 		}
 
-		s = append(append(s[:start], []rune(edit.New)...), s[stop:]...)
+		s = append(s[:start], append([]rune(edit.New), s[stop:]...)...)
 	}
 	return string(s), nil
 }
